@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <RootNamespace>store_accounting_system.ui</RootNamespace>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\data\store-accounting-data.csproj" />
+        <ProjectReference Include="..\core\store-accounting-core.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Page Update="AddWindows\CustomerAddWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="AddWindows\OrderAddWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="AddWindows\OrderItemAddWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="AddWindows\ProductAddWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="AddWindows\SupplyAddWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+    </ItemGroup>
+    
+    <Target Name="CopySeedDb" AfterTargets="Build">
+        <MakeDir Directories="$(OutDir)Db" />
+        <Copy SourceFiles="..\data\Db\StoreDB.db" DestinationFiles="$(OutDir)Db\StoreDB.db" SkipUnchangedFiles="true" Condition="Exists('..\data\Db\StoreDB.db')" />
+    </Target>
+</Project>
