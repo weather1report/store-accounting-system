@@ -63,6 +63,8 @@ public class StoreService(DbContext context, IRepository<Customer> customers, IR
             return;
         }
         
+        decimal totalAmount = 0;
+        
         foreach (var p in order.OrderItems)
         {
             var ps = GetRepository<Product>().GetList(new ProductFilter{Id = p.ProductId});
@@ -72,8 +74,10 @@ public class StoreService(DbContext context, IRepository<Customer> customers, IR
             if (product.Quantity < p.Count)
                 throw new Exception($"The product with Id = {product.Id} is only available in this quantity: {product.Quantity}.");
             product.Quantity -= p.Count;
+            totalAmount += p.Count * product.Price;
             GetRepository<Product>().Update(product);
         }
+        order.TotalAmount =  totalAmount;
         GetRepository<Order>().Create(order);
         SaveChanges();
     }
