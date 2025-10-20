@@ -3,7 +3,7 @@
 
 
 to launch:  
-cd src/data
+cd src/data  
 dotnet run
 
 to create database:  
