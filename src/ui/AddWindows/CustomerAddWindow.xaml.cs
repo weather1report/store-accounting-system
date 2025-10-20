@@ -18,7 +18,6 @@ namespace store_accounting_system.ui
         {
             CustomerName = TbName.Text?.Trim() ?? "";
             CustomerPhoneNumber = TbPhone.Text?.Trim() ?? "";
-            RegisterDate = DpRegisterDate.SelectedDate;
 
             if (string.IsNullOrWhiteSpace(CustomerName))
             {

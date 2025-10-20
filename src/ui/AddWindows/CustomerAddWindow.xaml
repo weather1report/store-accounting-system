@@ -7,8 +7,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>  <!-- buttons -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="160"/>
@@ -20,9 +20,6 @@
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,8,8" VerticalAlignment="Center" Text="PhoneNumber:"/>
         <TextBox   Grid.Row="1" Grid.Column="1" Margin="0,0,0,8" x:Name="TbPhone"/>
-
-        <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,8,8" VerticalAlignment="Center" Text="RegisterDate:"/>
-        <DatePicker Grid.Row="2" Grid.Column="1" Margin="0,0,0,8" x:Name="DpRegisterDate"/>
 
         <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Width="100" Margin="4" Click="BtnAdd_Click">Add</Button>

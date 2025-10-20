@@ -1,38 +1,39 @@
-﻿using System.IO.IsolatedStorage;
+﻿using System.Collections.ObjectModel;
+using System.IO.IsolatedStorage;
 using System.Windows;
 using System.Windows.Controls;
+using store_accounting_system.core.Entities;
+using store_accounting_system.core.Entities.Filters;
 using store_accounting_system.core.Interfaces;
 using store_accounting_system.core.Services;
+using store_accounting_system.ui.ViewModels;
 
 namespace store_accounting_system.ui
 {
     public partial class MainWindow : Window
     {
-        private readonly IStoreService _storeService;
+        private readonly MainViewModel _vm;
         
-        public MainWindow(IStoreService storeService)
+        public MainWindow(MainViewModel vm)
         {
+            DataContext = vm;
+            _vm = (MainViewModel)DataContext;
             InitializeComponent();
-            _storeService = storeService;
-    
             
-            // TODO: здесь можно загрузить первоначальные данные во все таблицы
-            // RefreshProductsGrid();
-            // RefreshCustomersGrid();
-            // RefreshOrdersGrid();
-            // RefreshOrderItemsGrid();
-            // RefreshSuppliesGrid();
+
         }
 
         // ===================== Products =====================
         private void BtnSearchProducts_Click(object sender, RoutedEventArgs e)
         {
-            var idText = TbProductId.Text?.Trim();
+            var id = ParseInt(TbProductId.Text?.Trim());
             var name = TbProductName.Text?.Trim();
-            var priceText = TbProductPrice.Text?.Trim();
-            var quantityText = TbProductQuantity.Text?.Trim();
+            var maxPrice = ParseDecimal(TbProductMaxPrice.Text?.Trim());
+            var minPrice = ParseDecimal(TbProductMinPrice.Text?.Trim());
+            var minQuantity = ParseInt(TbProductMinQuantity.Text?.Trim());
+            var maxQuantity = ParseInt(TbProductMaxQuantity.Text?.Trim());
 
-            // TODO: вызвать Core/Data с фильтром
+            RefreshProductsGrid(new ProductFilter{Id = id, Name = name, MaxPrice = maxPrice, MinPrice = minPrice, MinQuantity = minQuantity, MaxQuantity = maxQuantity});
         }
 
         private void BtnAddProduct_Click(object sender, RoutedEventArgs e)
@@ -40,10 +41,8 @@ namespace store_accounting_system.ui
             var dlg = new ProductAddWindow { Owner = this };
             if (dlg.ShowDialog() == true)
             {
-                // TODO: вызвать Core/Data для создания:
-                // var dto = new ProductDto { Name = dlg.ProductName, Price = dlg.ProductPrice, Quantity = dlg.ProductQuantity };
-                // await _productService.CreateAsync(dto);
-                // RefreshProductsGrid();
+                _vm.StoreService.Add(new Product{Id = 0, Name = dlg.ProductName, Price = dlg.ProductPrice ?? 0, Quantity = 0});
+                RefreshProductsGrid();
             }
         }
 
@@ -53,26 +52,44 @@ namespace store_accounting_system.ui
             if (dlg.ShowDialog() == true && dlg.Id.HasValue)
             {
                 var id = dlg.Id.Value;
-                // TODO: await _productService.DeleteAsync(id);
-                // RefreshProductsGrid();
+                _vm.StoreService.DeleteById<Product>(id);
+                RefreshProductsGrid();
+            }
+        }
+        
+        private void BtnChangeProduct_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new ProductChangeWindow(_vm.StoreService){ Owner = this };
+            if (dlg.ShowDialog() == true)
+            {
+                var id = dlg.ProductId!.Value;
+                var product = _vm.StoreService.GetList<Product>(new ProductFilter { Id = id }).First();
+                
+                if (dlg.ProductName != "") product.Name = dlg.ProductName;
+                if (dlg.Price.HasValue) product.Price = dlg.Price.Value;
+
+                _vm.StoreService.Update(product);
+                RefreshProductsGrid();
             }
         }
 
-        private void RefreshProductsGrid()
+        private void RefreshProductsGrid(IFilter<Product>? filter = null)
         {
-            // TODO: загрузить все продукты
+            _vm.Products.Clear();
+            foreach (var product in _vm.StoreService.GetList<Product>(filter))
+                _vm.Products.Add(product);
         }
 
         // ===================== Customers =====================
         private void BtnSearchCustomers_Click(object sender, RoutedEventArgs e)
         {
-            var idText = TbCustomerId.Text?.Trim();
+            var id = ParseInt(TbCustomerId.Text?.Trim());
             var name = TbCustomerName.Text?.Trim();
             var phone = TbCustomerPhoneNumber.Text?.Trim();
             var dateFrom = DpCustomerRegisterDateFrom.SelectedDate;
             var dateTo = DpCustomerRegisterDateTo.SelectedDate;
 
-            // TODO: вызвать Core/Data с фильтром по Id, Name, Phone, DateFrom, DateTo
+            RefreshCustomersGrid(new CustomerFilter{Id = id, Name = name, Phone = phone, RegisteredAfter = dateFrom, RegisteredBefore = dateTo});
         }
 
         private void BtnAddCustomer_Click(object sender, RoutedEventArgs e)
@@ -80,10 +97,8 @@ namespace store_accounting_system.ui
             var dlg = new CustomerAddWindow { Owner = this };
             if (dlg.ShowDialog() == true)
             {
-                // TODO:
-                // var dto = new CustomerDto { Name = dlg.CustomerName, PhoneNumber = dlg.CustomerPhoneNumber, RegisterDate = dlg.RegisterDate };
-                // await _customerService.CreateAsync(dto);
-                // RefreshCustomersGrid();
+                _vm.StoreService.Add(new Customer{Id = 0, Name = dlg.CustomerName, PhoneNumber = dlg.CustomerPhoneNumber, RegisterDate = DateTime.Now});
+                RefreshCustomersGrid();
             }
         }
 
@@ -93,37 +108,56 @@ namespace store_accounting_system.ui
             if (dlg.ShowDialog() == true && dlg.Id.HasValue)
             {
                 var id = dlg.Id.Value;
-                // TODO: await _customerService.DeleteAsync(id);
-                // RefreshCustomersGrid();
+                _vm.StoreService.DeleteById<Customer>(id);
+                RefreshCustomersGrid();
             }
         }
 
-        private void RefreshCustomersGrid()
+        private void RefreshCustomersGrid(IFilter<Customer>? filter = null)
         {
-            // TODO: загрузить всех клиентов
+            _vm.Customers.Clear();
+            foreach (var customer in _vm.StoreService.GetList<Customer>(filter))
+                _vm.Customers.Add(customer);
         }
 
         // ===================== Orders =====================
         private void BtnSearchOrders_Click(object sender, RoutedEventArgs e)
         {
-            var idText = TbOrderId.Text?.Trim();
-            var customerIdText = TbOrderCustomerId.Text?.Trim();
-            var totalAmountText = TbOrderTotalAmount.Text?.Trim();
+            var id = ParseInt(TbOrderId.Text?.Trim());
+            var customerId = ParseInt(TbOrderCustomerId.Text?.Trim());
+            var minTotalAmount = ParseDecimal(TbOrderMinTotalAmount.Text?.Trim());
+            var maxTotalAmount = ParseDecimal(TbOrderMaxTotalAmount.Text?.Trim());
             var dateFrom = DpOrderDateFrom.SelectedDate;
             var dateTo = DpOrderDateTo.SelectedDate;
 
-            // TODO: вызвать Core/Data с фильтром по Id, CustomerId, TotalAmount, DateFrom, DateTo
+            RefreshOrdersGrid(new OrderFilter
+            {
+                Id = id,
+                CustomerId = customerId,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
+                MinTotal = minTotalAmount,
+                MaxTotal = maxTotalAmount,
+            });
         }
 
-        private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
+        private void BtnAddOrder_Click(object sender, RoutedEventArgs e) 
         {
-            var dlg = new OrderAddWindow { Owner = this };
+            var dlg = new OrderAddWindow(_vm.StoreService) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
-                // TODO:
-                // var dto = new OrderDto { CustomerId = dlg.CustomerId, TotalAmount = dlg.TotalAmount, Date = dlg.Date };
-                // await _orderService.CreateAsync(dto);
-                // RefreshOrdersGrid();
+                int customerId = dlg.CustomerId!.Value;
+                DateTime date = dlg.Date!.Value;
+
+                var order = new Order { CustomerId = customerId, Date = date, Id = 0, OrderItems = new(), TotalAmount = 0};
+                foreach (var orderItem in dlg.OrderItems)
+                {
+                    order.OrderItems.Add(new OrderItem{Id = 0, ProductId = orderItem.ProductId ?? 0, Count = orderItem.Quantity ?? 0, Date = date});
+                }
+                
+                _vm.StoreService.Add(order);
+                RefreshOrdersGrid();
+                RefreshCustomersGrid();
             }
         }
 
@@ -133,75 +167,55 @@ namespace store_accounting_system.ui
             if (dlg.ShowDialog() == true && dlg.Id.HasValue)
             {
                 var id = dlg.Id.Value;
-                // TODO: await _orderService.DeleteAsync(id);
-                // RefreshOrdersGrid();
+                _vm.StoreService.DeleteById<Order>(id);
+                RefreshOrdersGrid();
             }
         }
 
-        private void RefreshOrdersGrid()
+        private void RefreshOrdersGrid(IFilter<Order>? filter = null)
         {
-            // TODO: загрузить все заказы
+            _vm.Orders.Clear();
+            foreach (var order in _vm.StoreService.GetList<Order>(filter))
+                _vm.Orders.Add(order);
         }
 
         // ===================== OrderItems =====================
         private void BtnSearchOrderItems_Click(object sender, RoutedEventArgs e)
         {
-            var idText = TbOrderItemId.Text?.Trim();
-            var orderIdText = TbOrderItemOrderId.Text?.Trim();
-            var countText = TbOrderItemCount.Text?.Trim();
+            var id = ParseInt(TbOrderItemId.Text?.Trim());
+            var orderId = ParseInt(TbOrderItemOrderId.Text?.Trim());
+            var productId = ParseInt(TbOrderItemProductId.Text?.Trim());
+            var dateFrom = DpOrderItemDateFrom.SelectedDate;
+            var dateTo = DpOrderDateTo.SelectedDate;
 
-            // TODO: вызвать Core/Data с фильтром по Id, OrderId, Count
+            RefreshOrderItemsGrid(new OrderItemFilter{Id = id, OrderId = orderId, ProductId = productId,  DateFrom = dateFrom, DateTo = dateTo});
         }
 
-        private void BtnAddOrderItem_Click(object sender, RoutedEventArgs e)
+        private void RefreshOrderItemsGrid(IFilter<OrderItem>? filter = null)
         {
-            var dlg = new OrderItemAddWindow { Owner = this };
-            if (dlg.ShowDialog() == true)
-            {
-                // TODO:
-                // var dto = new OrderItemDto { OrderId = dlg.OrderId, Count = dlg.Count };
-                // await _orderItemService.CreateAsync(dto);
-                // RefreshOrderItemsGrid();
-            }
-        }
-
-        private void BtnDeleteOrderItem_Click(object sender, RoutedEventArgs e)
-        {
-            var dlg = new OrderItemDeleteWindow { Owner = this };
-            if (dlg.ShowDialog() == true && dlg.Id.HasValue)
-            {
-                var id = dlg.Id.Value;
-                // TODO: await _orderItemService.DeleteAsync(id);
-                // RefreshOrderItemsGrid();
-            }
-        }
-
-        private void RefreshOrderItemsGrid()
-        {
-            // TODO: загрузить все позиции заказов
+            _vm.OrderItems.Clear();
+            foreach (var orderItem in _vm.StoreService.GetList<OrderItem>(filter))
+                _vm.OrderItems.Add(orderItem);
         }
 
         // ===================== Supplies =====================
         private void BtnSearchSupplies_Click(object sender, RoutedEventArgs e)
         {
-            var idText = TbSupplyId.Text?.Trim();
+            var id = ParseInt(TbSupplyId.Text?.Trim());
             var dateFrom = DpSupplyDateFrom.SelectedDate;
             var dateTo = DpSupplyDateTo.SelectedDate;
-            var productIdText = TbSupplyProductId.Text?.Trim();
-            var quantityText = TbSupplyQuantity.Text?.Trim();
+            var productId = ParseInt(TbSupplyProductId.Text?.Trim());
 
-            // TODO: вызвать Core/Data с фильтром по Id, DateFrom, DateTo, ProductId, Quantity
+            RefreshSuppliesGrid(new SupplyFilter{Id = id, DateFrom = dateFrom, DateTo = dateTo, ProductId = productId});
         }
 
         private void BtnAddSupply_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new SupplyAddWindow { Owner = this };
+            var dlg = new SupplyAddWindow(_vm.StoreService) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
-                // TODO:
-                // var dto = new SupplyDto { Date = dlg.Date, ProductId = dlg.ProductId, Quantity = dlg.Quantity };
-                // await _supplyService.CreateAsync(dto);
-                // RefreshSuppliesGrid();
+                _vm.StoreService.Add(new Supply{Date = dlg.Date ?? DateTime.Now, Id = 0, ProductId = dlg.ProductId ?? 0, Quantity = dlg.Quantity ?? 0});
+                RefreshSuppliesGrid();
             }
         }
 
@@ -211,14 +225,16 @@ namespace store_accounting_system.ui
             if (dlg.ShowDialog() == true && dlg.Id.HasValue)
             {
                 var id = dlg.Id.Value;
-                // TODO: await _supplyService.DeleteAsync(id);
-                // RefreshSuppliesGrid();
+                _vm.StoreService.DeleteById<Supply>(id);
+                RefreshSuppliesGrid();
             }
         }
 
-        private void RefreshSuppliesGrid()
+        private void RefreshSuppliesGrid(IFilter<Supply>? filter = null)
         {
-            // TODO: загрузить все поставки
+            _vm.Supplies.Clear();
+            foreach (var supply in _vm.StoreService.GetList<Supply>(filter))
+                _vm.Supplies.Add(supply);
         }
 
         // ===================== Вспомогательные =====================
@@ -232,6 +248,33 @@ namespace store_accounting_system.ui
         {
             if (decimal.TryParse(text, out var val)) return val;
             return null;
+        }
+        
+        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is not TabControl) return;
+            
+            if (MainTabs.SelectedItem is TabItem tab)
+            {
+                switch (tab.Header)
+                {
+                    case "Products":
+                        RefreshProductsGrid();
+                        break;
+                    case "Customers":
+                        RefreshCustomersGrid();
+                        break;
+                    case "Orders":
+                        RefreshOrdersGrid();
+                        break;
+                    case "OrderItems":
+                        RefreshOrderItemsGrid();
+                        break;
+                    case "Supplies":
+                        RefreshSuppliesGrid();
+                        break;
+                }
+            }
         }
     }
 }

@@ -14,8 +14,12 @@ public class StoreDbContext :  DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        Directory.CreateDirectory("Db"!);
-        optionsBuilder.UseSqlite($"Data Source=Db/StoreDb.db");
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appDir = Path.Combine(root, "StoreAccountingSystem");
+        Directory.CreateDirectory(appDir);         
+
+        var dbPath = Path.Combine(appDir, "StoreDb.db");
+        optionsBuilder.UseSqlite($"Data Source={dbPath}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,6 +1,7 @@
 using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
 using store_accounting_system.core.Entities;
+using store_accounting_system.core.Entities.Filters;
 using store_accounting_system.core.Interfaces;
 
 namespace store_accounting_system.core.Services;
@@ -39,6 +40,41 @@ public class StoreService(DbContext context, IRepository<Customer> customers, IR
     public void Add<T>(T entity) where T : class, IHaveIntId
     {
         GetRepository<T>().Create(entity);
+        SaveChanges();
+    }
+
+    public void Add(Supply supply)
+    {
+        var products = GetRepository<Product>().GetList(new ProductFilter{Id = supply.ProductId});
+        if (products.Count == 0)
+            throw new Exception($"No product found while add Supply ProductId={supply.ProductId}");
+        GetRepository<Supply>().Create(supply);
+        var product = products.First();
+        product.Quantity += supply.Quantity;
+        GetRepository<Product>().Update(product);
+        SaveChanges();
+    }
+    
+    public void Add(Order order)
+    {
+        if (order.OrderItems == null)
+        {
+            GetRepository<Order>().Create(order);
+            return;
+        }
+        
+        foreach (var p in order.OrderItems)
+        {
+            var ps = GetRepository<Product>().GetList(new ProductFilter{Id = p.ProductId});
+            if (ps.Count == 0)
+                throw new Exception($"No product found while add Order ProductId={p.ProductId}");
+            var product =  ps.First();
+            if (product.Quantity < p.Count)
+                throw new Exception($"The product with Id = {product.Id} is only available in this quantity: {product.Quantity}.");
+            product.Quantity -= p.Count;
+            GetRepository<Product>().Update(product);
+        }
+        GetRepository<Order>().Create(order);
         SaveChanges();
     }
 

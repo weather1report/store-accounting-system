@@ -14,17 +14,6 @@ public class SqLiteRepository<T>(DbSet<T> set) : IRepository<T>  where T : class
         var expression = filter?.GetExpression();
         if (expression != null)
             query = query.Where(expression);
-        
-        if (!string.IsNullOrWhiteSpace(filter?.IncludeProperties))
-        {
-            foreach (var include in filter.IncludeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                query = query.Include(include);
-        }
-        
-        var orderBy = filter?.GetOrderBy();
-        if (orderBy != null)
-            query = orderBy(query);
-        
 
         return query.ToList();
         

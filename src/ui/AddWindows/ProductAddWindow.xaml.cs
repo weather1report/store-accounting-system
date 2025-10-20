@@ -7,7 +7,6 @@ namespace store_accounting_system.ui
     {
         public string ProductName { get; private set; } = "";
         public decimal? ProductPrice { get; private set; }
-        public int? ProductQuantity { get; private set; }
 
         public ProductAddWindow()
         {
@@ -19,10 +18,13 @@ namespace store_accounting_system.ui
             ProductName = TbName.Text?.Trim() ?? "";
             if (decimal.TryParse(TbPrice.Text?.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
                 ProductPrice = price;
-            if (int.TryParse(TbQuantity.Text?.Trim(), out var qty))
-                ProductQuantity = qty;
 
-            // Простая валидация
+            if (ProductPrice <= 0)
+            {
+                MessageBox.Show("Price must be greater than zero.");
+                return;
+            }
+            
             if (string.IsNullOrWhiteSpace(ProductName))
             {
                 MessageBox.Show("Name is required.");

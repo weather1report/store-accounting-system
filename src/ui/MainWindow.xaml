@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Store Accounting System" Height="720" Width="1100"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
@@ -14,15 +15,17 @@
             <TextBlock Text="Store Accounting System" FontSize="18" FontWeight="SemiBold"/>
         </DockPanel>
 
-        <TabControl Grid.Row="1" x:Name="MainTabs">
+        <TabControl Grid.Row="1" x:Name="MainTabs" SelectionChanged="MainTabs_SelectionChanged">
             <!-- TAB 1: Products -->
             <TabItem Header="Products" x:Name="TabProducts">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/> <!-- панель поиска -->
+                        <RowDefinition Height="*"/>    <!-- таблица -->
+                        <RowDefinition Height="Auto"/> <!-- кнопки Add/Delete/Change -->
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0: поиск -->
                     <DockPanel Grid.Row="0" LastChildFill="False" Margin="8">
                         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock Text="Id:" Margin="4" VerticalAlignment="Center"/>
@@ -31,21 +34,23 @@
                             <TextBlock Text="Name:" Margin="8,4,4,4" VerticalAlignment="Center"/>
                             <TextBox x:Name="TbProductName" Width="180"/>
 
-                            <TextBlock Text="Price:" Margin="8,4,4,4" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TbProductPrice" Width="100"/>
+                            <TextBlock Text="MinPrice:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbProductMinPrice" Width="100"/>
+                            <TextBlock Text="MaxPrice:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbProductMaxPrice" Width="100"/>
 
-                            <TextBlock Text="Quantity:" Margin="8,4,4,4" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TbProductQuantity" Width="100"/>
+                            <TextBlock Text="MinQuantity:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbProductMinQuantity" Width="100"/>
+                            <TextBlock Text="MaxQuantity:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbProductMaxQuantity" Width="100"/>
 
-                            <Button x:Name="BtnSearchProducts" Style="{StaticResource ToolbarButton}" Click="BtnSearchProducts_Click">Search</Button>
+                            <Button x:Name="BtnSearchProducts" Style="{StaticResource ToolbarButton}" 
+                                    Click="BtnSearchProducts_Click">Search</Button>
                         </WrapPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button x:Name="BtnAddProduct" Style="{StaticResource ToolbarButton}" Click="BtnAddProduct_Click">Add</Button>
-                            <Button x:Name="BtnDeleteProduct" Style="{StaticResource ToolbarButton}" Click="BtnDeleteProduct_Click">Delete</Button>
-                        </StackPanel>
                     </DockPanel>
 
-                    <DataGrid Grid.Row="1" x:Name="GridProducts" ItemsSource="{Binding}">
+                    <!-- Row 1: таблица -->
+                    <DataGrid Grid.Row="1" x:Name="GridProducts" ItemsSource="{Binding Products}" Margin="8,0,8,8">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
@@ -53,6 +58,16 @@
                             <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <!-- Row 2: кнопки снизу справа -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+                        <Button x:Name="BtnAddProduct" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnAddProduct_Click" Margin="0,0,8,0">Add</Button>
+                        <Button x:Name="BtnDeleteProduct" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnDeleteProduct_Click" Margin="0,0,8,0">Delete</Button>
+                        <Button x:Name="BtnChangeProduct" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnChangeProduct_Click">Change</Button>
+                    </StackPanel>
                 </Grid>
             </TabItem>
 
@@ -60,10 +75,12 @@
             <TabItem Header="Customers" x:Name="TabCustomers">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/> <!-- панель поиска -->
+                        <RowDefinition Height="*"/>    <!-- таблица -->
+                        <RowDefinition Height="Auto"/> <!-- кнопки снизу -->
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0: поиск -->
                     <DockPanel Grid.Row="0" LastChildFill="False" Margin="8">
                         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock Text="Id:" Margin="4" VerticalAlignment="Center"/>
@@ -81,15 +98,13 @@
                             <TextBlock Text="To:" Margin="4" VerticalAlignment="Center"/>
                             <DatePicker x:Name="DpCustomerRegisterDateTo" Width="150"/>
 
-                            <Button x:Name="BtnSearchCustomers" Style="{StaticResource ToolbarButton}" Click="BtnSearchCustomers_Click">Search</Button>
+                            <Button x:Name="BtnSearchCustomers" Style="{StaticResource ToolbarButton}" 
+                                    Click="BtnSearchCustomers_Click">Search</Button>
                         </WrapPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button x:Name="BtnAddCustomer" Style="{StaticResource ToolbarButton}" Click="BtnAddCustomer_Click">Add</Button>
-                            <Button x:Name="BtnDeleteCustomer" Style="{StaticResource ToolbarButton}" Click="BtnDeleteCustomer_Click">Delete</Button>
-                        </StackPanel>
                     </DockPanel>
 
-                    <DataGrid Grid.Row="1" x:Name="GridCustomers" ItemsSource="{Binding}">
+                    <!-- Row 1: таблица -->
+                    <DataGrid Grid.Row="1" x:Name="GridCustomers" ItemsSource="{Binding Customers}" Margin="8,0,8,8">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
@@ -97,17 +112,28 @@
                             <DataGridTextColumn Header="RegisterDate" Binding="{Binding RegisterDate}"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <!-- Row 2: кнопки снизу справа -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+                        <Button x:Name="BtnAddCustomer" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnAddCustomer_Click" Margin="0,0,8,0">Add</Button>
+                        <Button x:Name="BtnDeleteCustomer" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnDeleteCustomer_Click">Delete</Button>
+                    </StackPanel>
                 </Grid>
-            </TabItem>
+            </TabItem>  
+
 
             <!-- TAB 3: Orders -->
             <TabItem Header="Orders" x:Name="TabOrders">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/> <!-- панель поиска -->
+                        <RowDefinition Height="*"/>    <!-- таблица -->
+                        <RowDefinition Height="Auto"/> <!-- кнопки снизу -->
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0: поиск -->
                     <DockPanel Grid.Row="0" LastChildFill="False" Margin="8">
                         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock Text="Id:" Margin="4" VerticalAlignment="Center"/>
@@ -116,8 +142,10 @@
                             <TextBlock Text="CustomerId:" Margin="8,4,4,4" VerticalAlignment="Center"/>
                             <TextBox x:Name="TbOrderCustomerId" Width="110"/>
 
-                            <TextBlock Text="TotalAmount:" Margin="8,4,4,4" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TbOrderTotalAmount" Width="110"/>
+                            <TextBlock Text="MinTotalAmount:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbOrderMinTotalAmount" Width="110"/>
+                            <TextBlock Text="MaxTotalAmount:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbOrderMaxTotalAmount" Width="110"/>
 
                             <TextBlock Text="Date From:" Margin="8,4,4,4" VerticalAlignment="Center"/>
                             <DatePicker x:Name="DpOrderDateFrom" Width="150"/>
@@ -125,15 +153,13 @@
                             <TextBlock Text="To:" Margin="4" VerticalAlignment="Center"/>
                             <DatePicker x:Name="DpOrderDateTo" Width="150"/>
 
-                            <Button x:Name="BtnSearchOrders" Style="{StaticResource ToolbarButton}" Click="BtnSearchOrders_Click">Search</Button>
+                            <Button x:Name="BtnSearchOrders" Style="{StaticResource ToolbarButton}" 
+                                    Click="BtnSearchOrders_Click">Search</Button>
                         </WrapPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button x:Name="BtnAddOrder" Style="{StaticResource ToolbarButton}" Click="BtnAddOrder_Click">Add</Button>
-                            <Button x:Name="BtnDeleteOrder" Style="{StaticResource ToolbarButton}" Click="BtnDeleteOrder_Click">Delete</Button>
-                        </StackPanel>
                     </DockPanel>
 
-                    <DataGrid Grid.Row="1" x:Name="GridOrders" ItemsSource="{Binding}">
+                    <!-- Row 1: таблица -->
+                    <DataGrid Grid.Row="1" x:Name="GridOrders" ItemsSource="{Binding Orders}" Margin="8,0,8,8">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80"/>
                             <DataGridTextColumn Header="CustomerId" Binding="{Binding CustomerId}"/>
@@ -141,6 +167,14 @@
                             <DataGridTextColumn Header="Date" Binding="{Binding Date}"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <!-- Row 2: кнопки снизу справа -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+                        <Button x:Name="BtnAddOrder" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnAddOrder_Click" Margin="0,0,8,0">Add</Button>
+                        <Button x:Name="BtnDeleteOrder" Style="{StaticResource ToolbarButton}" Width="120" Height="30"
+                                Click="BtnDeleteOrder_Click">Delete</Button>
+                    </StackPanel>
                 </Grid>
             </TabItem>
 
@@ -160,21 +194,27 @@
                             <TextBlock Text="OrderId:" Margin="8,4,4,4" VerticalAlignment="Center"/>
                             <TextBox x:Name="TbOrderItemOrderId" Width="110"/>
 
-                            <TextBlock Text="Count:" Margin="8,4,4,4" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TbOrderItemCount" Width="100"/>
+                            <TextBlock Text="ProductId:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <TextBox x:Name="TbOrderItemProductId" Width="100"/>
+                            
+                            <TextBlock Text="Date From:" Margin="8,4,4,4" VerticalAlignment="Center"/>
+                            <DatePicker x:Name="DpOrderItemDateFrom" Width="150"/>
+
+                            <TextBlock Text="To:" Margin="4" VerticalAlignment="Center"/>
+                            <DatePicker x:Name="DpOrderItemDateTo" Width="150"/>
+                            
+                            
 
                             <Button x:Name="BtnSearchOrderItems" Style="{StaticResource ToolbarButton}" Click="BtnSearchOrderItems_Click">Search</Button>
                         </WrapPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button x:Name="BtnAddOrderItem" Style="{StaticResource ToolbarButton}" Click="BtnAddOrderItem_Click">Add</Button>
-                            <Button x:Name="BtnDeleteOrderItem" Style="{StaticResource ToolbarButton}" Click="BtnDeleteOrderItem_Click">Delete</Button>
-                        </StackPanel>
                     </DockPanel>
 
-                    <DataGrid Grid.Row="1" x:Name="GridOrderItems" ItemsSource="{Binding}">
+                    <DataGrid Grid.Row="1" x:Name="GridOrderItems" ItemsSource="{Binding OrderItems}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80"/>
                             <DataGridTextColumn Header="OrderId" Binding="{Binding OrderId}"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Date}"/>
+                            <DataGridTextColumn Header="ProductId" Binding="{Binding ProductId}"/>
                             <DataGridTextColumn Header="Count" Binding="{Binding Count}"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -185,10 +225,12 @@
             <TabItem Header="Supplies" x:Name="TabSupplies">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/> <!-- панель поиска -->
+                        <RowDefinition Height="*"/>    <!-- таблица -->
+                        <RowDefinition Height="Auto"/> <!-- кнопки снизу -->
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0: поиск -->
                     <DockPanel Grid.Row="0" LastChildFill="False" Margin="8">
                         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <TextBlock Text="Id:" Margin="4" VerticalAlignment="Center"/>
@@ -203,18 +245,13 @@
                             <TextBlock Text="ProductId:" Margin="8,4,4,4" VerticalAlignment="Center"/>
                             <TextBox x:Name="TbSupplyProductId" Width="110"/>
 
-                            <TextBlock Text="Quantity:" Margin="8,4,4,4" VerticalAlignment="Center"/>
-                            <TextBox x:Name="TbSupplyQuantity" Width="100"/>
-
-                            <Button x:Name="BtnSearchSupplies" Style="{StaticResource ToolbarButton}" Click="BtnSearchSupplies_Click">Search</Button>
+                            <Button x:Name="BtnSearchSupplies" Style="{StaticResource ToolbarButton}" 
+                                    Click="BtnSearchSupplies_Click">Search</Button>
                         </WrapPanel>
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                            <Button x:Name="BtnAddSupply" Style="{StaticResource ToolbarButton}" Click="BtnAddSupply_Click">Add</Button>
-                            <Button x:Name="BtnDeleteSupply" Style="{StaticResource ToolbarButton}" Click="BtnDeleteSupply_Click">Delete</Button>
-                        </StackPanel>
                     </DockPanel>
 
-                    <DataGrid Grid.Row="1" x:Name="GridSupplies" ItemsSource="{Binding}">
+                    <!-- Row 1: таблица -->
+                    <DataGrid Grid.Row="1" x:Name="GridSupplies" ItemsSource="{Binding Supplies}" Margin="8,0,8,8">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="80"/>
                             <DataGridTextColumn Header="Date" Binding="{Binding Date}"/>
@@ -222,6 +259,17 @@
                             <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <!-- Row 2: кнопки снизу справа -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+                        <Button x:Name="BtnAddSupply" Style="{StaticResource ToolbarButton}" 
+                                Width="120" Height="30"
+                                Click="BtnAddSupply_Click" Margin="0,0,8,0">Add</Button>
+                        <Button x:Name="BtnDeleteSupply" Style="{StaticResource ToolbarButton}" 
+                                Width="120" Height="30"
+                                Click="BtnDeleteSupply_Click">Delete</Button>
+                    </StackPanel>
+
                 </Grid>
             </TabItem>
         </TabControl>

@@ -7,7 +7,10 @@ public class OrderItem : IHaveIntId
 {
     public int Id { get; set; } = 0;
     public int OrderId { get; set; }
+    public int ProductId { get; set; }
     public int Count { get; set; }
+    
+    public DateTime? Date { get; set; }
 
     [ForeignKey("OrderId")]
     public virtual Order? Order { get; set; }

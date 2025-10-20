@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Windows;
 using store_accounting_system.core.Entities;
 using store_accounting_system.core.Entities.Filters;
@@ -6,15 +7,17 @@ using store_accounting_system.core.Interfaces;
 
 namespace store_accounting_system.ui
 {
-    public partial class SupplyAddWindow : Window
+    public partial class ProductChangeWindow : Window
     {
-        public DateTime? Date { get; private set; }
+        
         public int? ProductId { get; private set; }
-        public int? Quantity { get; private set; }
+
+        public string ProductName { get; private set; } = "";
+        public decimal? Price { get; private set; }
         
         private readonly IStoreService _storeService;
 
-        public SupplyAddWindow(IStoreService storeService)
+        public ProductChangeWindow(IStoreService storeService)
         {
             InitializeComponent();
             _storeService = storeService;
@@ -22,13 +25,14 @@ namespace store_accounting_system.ui
 
         private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
-            Date = DpDate.SelectedDate;
+            ProductName = TbName.Text?.Trim() ?? "";
             if (int.TryParse(TbProductId.Text?.Trim(), out var pid)) ProductId = pid;
-            if (int.TryParse(TbQuantity.Text?.Trim(), out var qty)) Quantity = qty;
+            if (decimal.TryParse(TbPrice.Text?.Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
+                Price = price;
 
-            if (Date == null || ProductId == null || Quantity == null)
+            if (ProductId == null || ((ProductName == "") && (Price == null)))
             {
-                MessageBox.Show("Date, ProductId and Quantity are required.");
+                MessageBox.Show("ProductId and New Name, Price are required.");
                 return;
             }
 
@@ -38,12 +42,11 @@ namespace store_accounting_system.ui
                 return;
             }
 
-            if (Quantity < 1)
+            if (Price <= 0)
             {
-                MessageBox.Show("Quantity must be greater than zero.");
+                MessageBox.Show("Price must be greater than zero.");
                 return;
             }
-                
             DialogResult = true;
             Close();
         }
