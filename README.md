@@ -3,11 +3,9 @@
 
 
 to launch:  
-cd src/data  
-dotnet run
+dotnet run --project src/ui
 
 to create database:  
-cd src/data  
-dotnet ef database update
+dotnet ef database update --project src/data
 
 
